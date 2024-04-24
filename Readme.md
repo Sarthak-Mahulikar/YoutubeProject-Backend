@@ -1,1 +1,1 @@
-The youtube platform using javascript
+The youtube platform project using javascript
