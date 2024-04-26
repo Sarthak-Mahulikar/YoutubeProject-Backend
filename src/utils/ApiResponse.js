@@ -1,3 +1,4 @@
+//sending custom response to the user
 class ApiResponse {
   constructor(statusCode, data, message = "Success") {
     this.statusCode = statusCode;
