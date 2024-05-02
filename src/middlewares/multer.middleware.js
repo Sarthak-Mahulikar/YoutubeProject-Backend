@@ -1,6 +1,6 @@
 import multer from "multer";
 
-console.log("assdasdasdasdasdad");
+// console.log("assdasdasdasdasdad");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "/public/temp");
