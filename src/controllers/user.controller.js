@@ -8,15 +8,27 @@ const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
+    // console.log("access token: " + accessToken);
     const refreshToken = user.generateRefreshToken();
+    // console.log(refreshToken);
     user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
+    // console.log(user.refreshToken);
+    // await user.save({ validateBeforeSave: false });
+    // console.log(user);
+    // await user.save();
+    try {
+      user.save();
+    } catch (error) {
+      throw new ApiError(500, error.message);
+    }
 
+    console.log("after saving ");
     return { accessToken, refreshToken };
   } catch (error) {
     throw new ApiError(
       500,
-      "something went wrong while generating access and refresh token"
+      // "something went wrong while generating access and refresh token"
+      error.message
     );
   }
 };
@@ -91,7 +103,7 @@ const registerUser = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(200, createdUser, "USER REGISTERED SUCCESSFULLY"));
 });
-
+//login method below
 const loginUser = asyncHandler(async (req, res) => {
   //req body data
   //username or email
@@ -100,7 +112,7 @@ const loginUser = asyncHandler(async (req, res) => {
   // access and refresh token
   //send cookie
   const { email, username, password } = req.body;
-  if (!username || !email) {
+  if (!(username || email)) {
     throw new ApiError(400, "username or email is required");
   }
   const user = await User.findOne({
@@ -116,14 +128,18 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid Password");
   }
 
+  console.log("dfjsbfjdsbj");
+  console.log(user._id);
   //getting access token and refresh token
-  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+  var { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
   );
+  console.log("Refresh token" + refreshToken);
 
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
+  console.log("logged in" + loggedInUser);
   const options = {
     httpOnly: true,
     secure: true,
