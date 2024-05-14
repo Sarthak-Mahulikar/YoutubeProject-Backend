@@ -26,8 +26,8 @@ const userSchema = new Schema(
       index: true,
     },
     avatar: {
-      type: String,
-      // required: true,
+      type: String, //cloudinary URL
+      required: true,
     },
     coverImage: {
       type: String, //cloudinary URL
@@ -53,7 +53,7 @@ userSchema.pre("save", async function (req, res, next) {
     return next;
   }
   this.password = await bcrypt.hash(this.password, 10);
-  next();
+  // next();
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {

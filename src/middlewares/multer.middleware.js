@@ -3,7 +3,10 @@ import multer from "multer";
 // console.log("assdasdasdasdasdad");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "/public/temp");
+    cb(
+      null,
+      "/Ortigan learning/node js practice/node js course codes/youtube_project/public/temp"
+    );
     // console.log(req);
   },
   filename: function (req, file, cb) {
