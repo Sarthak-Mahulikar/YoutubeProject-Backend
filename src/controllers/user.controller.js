@@ -136,6 +136,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   console.log("dfjsbfjdsbj");
   console.log(user._id);
+
   //getting access token and refresh token
   var { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
@@ -169,7 +170,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     req.user._id,
     {
       $set: {
-        refreshToken: undefined,
+        refreshToken: 1,
       },
     },
     {
