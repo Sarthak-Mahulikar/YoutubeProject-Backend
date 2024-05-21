@@ -10,12 +10,15 @@ import {
 } from "../controllers/playlist.controller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-
+// import multer from "multer";
+// const storage = multer.memoryStorage(); // Store data in memory
+// const upload = multer({ storage: storage });
+import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
 
 router.use(verifyJWT);
 
-router.route("/").post(createPlaylist);
+router.route("/createPlaylist").post(upload.none(), createPlaylist);
 
 router
   .route("/:playlistId")
@@ -23,10 +26,14 @@ router
   .patch(updatePlaylist)
   .delete(deletePlaylist);
 
-router.route("/add/:videoId/:playlistId").patch(addVideoToPlaylist);
+router
+  .route("/add/:videoId/:playlistId")
+  .patch(upload.none(), addVideoToPlaylist);
 
-router.route("/remove/:videoId/:playlistId").patch(removeVideoFromPlaylist);
+router
+  .route("/remove/:videoId/:playlistId")
+  .patch(upload.none(), removeVideoFromPlaylist);
 
-router.route("/user/:userId").patch(getUserPlaylists);
+router.route("/user/:userId").patch(upload.none(), getUserPlaylists);
 
 export default router;
