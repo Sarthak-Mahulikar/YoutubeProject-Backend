@@ -23,7 +23,7 @@ router.route("/createPlaylist").post(upload.none(), createPlaylist);
 router
   .route("/:playlistId")
   .get(getPlaylistById)
-  .patch(updatePlaylist)
+  .patch(upload.none(), updatePlaylist)
   .delete(deletePlaylist);
 
 router

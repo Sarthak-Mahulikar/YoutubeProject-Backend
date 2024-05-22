@@ -148,6 +148,17 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     const video = await Video.findById(videoId);
 
     // Playlist.save();
+
+    const playlist = await Playlist.findByIdAndUpdate(
+      playlistId,
+      {
+        $pull: {
+          videos: video._id,
+        },
+      },
+      { new: true }
+    );
+
     return res
       .status(200)
       .json(200, "deleted video from playlist successfully");
@@ -159,12 +170,60 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
 //delete playlist
 const deletePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
+  try {
+    const playlist = await Playlist.findById(playlistId);
+    if (!playlist) {
+      throw new ApiError(404, "playlist not found");
+    }
+    if (playlist.owner._id.valueOf() === req.user._id.valueOf()) {
+      await Playlist.findByIdAndDelete(playlistId);
+    } else {
+      throw new ApiError(403, "you are not authorized to delete this playlist");
+    }
+
+    return res.status(200).json(200, playlist, "playlist deleted successfully");
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
 });
 
 //update playlist
 const updatePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
   const { name, description } = req.body;
+  console.log(description);
+  try {
+    if (!(name || description)) {
+      throw new ApiError(400, "name or description is required");
+    }
+    const checkPlaylist = await Playlist.findById(playlistId);
+    if (!checkPlaylist) {
+      throw new ApiError(404, "playlist not found");
+    }
+    console.log(checkPlaylist);
+    if (checkPlaylist.owner._id.valueOf() === req.user._id.valueOf()) {
+      const playlist = await Playlist.findByIdAndUpdate(
+        playlistId,
+        {
+          $set: {
+            name,
+            description,
+          },
+        },
+        {
+          new: true,
+        }
+      );
+
+      res
+        .status(200)
+        .json(new ApiResponse(200, playlist, "playlist updated successfully"));
+    } else {
+      throw new ApiError(403, "you are not authorized to update this playlist");
+    }
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
 });
 
 export {
