@@ -15,6 +15,6 @@ router.use(verifyJWT);
 
 router.route("/").post(upload.none(), createTweet);
 router.route("/user/:userId").get(getUserTweets);
-router.route("/:tweetId").patch(updateTweet).delete(deleteTweet);
+router.route("/:tweetId").patch(upload.none(), updateTweet).delete(deleteTweet);
 
 export default router;
