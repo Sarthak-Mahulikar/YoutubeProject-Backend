@@ -5,6 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Video } from "../models/video.model.js";
 import { Tweet } from "../models/tweet.model.js";
+import { Comment } from "../models/comment.model.js";
 
 //Toggle like on video
 const toggleVideoLike = asyncHandler(async (req, res) => {
@@ -38,6 +39,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
       comment: comment,
       likedBy: req.user,
     });
+    console.log("like object: ", like);
 
     return res.status(201).json(201, like, "liked comment sucessfully");
   } catch (error) {
@@ -67,9 +69,12 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 //get all liked videos
 const getLikedVideos = asyncHandler(async (req, res) => {
   try {
+    //NEED TO APPLY PIPELINE FOR GETTING PROPER OUTPUT
+
     const likedVideos = await Like.find({ likedBy: req.user }).populate({
       path: "video",
     });
+    console.log(likedVideos);
     return res
       .status(200)
       .json(200, likedVideos, "liked videos retrieved sucessfully");
