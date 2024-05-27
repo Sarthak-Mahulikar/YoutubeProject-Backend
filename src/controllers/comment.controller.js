@@ -11,6 +11,19 @@ const getVideoComments = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   const { page = 1, limit = 10 } = req.query;
   try {
+    const video = await Video.findById(videoId);
+    if (!video) {
+      throw new ApiError(404, "Video not found");
+    }
+    const comments = await Comment.find({ video: video })
+      .populate("owner")
+      .limit(limit)
+      .sort({ createdAt: -1 });
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, comments, "video comment fetched sucessfully")
+      );
   } catch (error) {
     throw new ApiError(error.message);
   }

@@ -5,10 +5,164 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
+import { Like } from "../models/like.model.js";
 
 //Fetch all videos
 const getAllVideos = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+  try {
+    const video = await Video.aggregate([
+      {
+        $match: {
+          owner: new mongoose.Types.ObjectId(req.user._id),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "owner",
+        },
+      },
+      // {
+      //   $lookup: {
+      //     from: "likes",
+      //     localField: "views",
+      //     foreignField: "_id",
+      //     as: "views",
+      //     pipeline: [
+      //       {
+      //         $lookup: {
+      //           from: "users",
+      //           localField: "likedBy",
+      //           foreignField: "_id",
+      //           as: "LikedBy",
+      //           pipeline: [
+      //             {
+      //               $project: {
+      //                 fullName: 1,
+      //                 username: 1,
+      //               },
+      //             },
+      //           ],
+      //         },
+      //       },
+      //       {
+      //         $addFields: {
+      //           likedBy: {
+      //             $first: "$LikedBy",
+      //           },
+      //         },
+      //       },
+      //     ],
+      //   },
+      // },
+      // {
+      //   likes: {
+      //     $count: "likedBy",
+      //   },
+      // },
+      // {
+      //   $addFields: {
+      //     likeCount: {
+      //       $first: "LikedBy",
+      //     },
+      //   },
+      // },
+      // {
+      //   $count: "likedBy",
+      // },
+      {
+        $project: {
+          title: 1,
+          description: 1,
+          duration: 1,
+          videoFile: 1,
+          thumbnail: 1,
+          owner: 1,
+          views: {
+            likedBy: {
+              fullName: 1,
+              username: 1,
+            },
+          },
+          likeCount: 1,
+        },
+      },
+    ]);
+
+    const likedVideo = await Like.aggregate([
+      {
+        $match: {
+          likedBy: new mongoose.Types.ObjectId(req.user._id),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "likedBy",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // {
+      //   $group: {
+      //     _id: "$user._id",
+      //     // fullName: "$user.fullName",
+      //     // username: "$user.username",
+      //   },
+      // },
+      {
+        $lookup: {
+          from: "videos",
+          localField: "video",
+          foreignField: "_id",
+          as: "video",
+        },
+      },
+
+      {
+        $unwind: {
+          path: "$video",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$video._id",
+          // test: "$user",
+          username: { $first: "$user.username" },
+          fullName: { $first: "$user.fullName" },
+          likeCount: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          likeCount: 1,
+          fullName: 1,
+          username: 1,
+        },
+      },
+    ]);
+
+    const data = {
+      video,
+      likedVideo,
+    };
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, data, "fecth videos successfull"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
 });
 
 //publish a Video
